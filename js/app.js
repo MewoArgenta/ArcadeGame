@@ -1,11 +1,3 @@
-// This objects represents the tile where the player is on. The tile at the top left is 0,0 under is 0,1 etc.
-class activeTile {
-    update(horiz,vertic) {
-        this.positionX = horiz;
-        this.positionY = vertic;
-    }
-}
-
 
 // Enemies our player must avoid
 class Enemy {
@@ -14,8 +6,7 @@ class Enemy {
         // The image/sprite for our enemies, this uses
         // a helper we've provided to easily load images
         this.sprite = 'images/enemy-bug.png';
-
-        this.reset(1);
+        this.reset();
     }
 
     // Update the enemy's position, required method for game
@@ -49,9 +40,14 @@ class Enemy {
     }
 
    checkIfBugTouchesPlayer() {
-
+        const differenceOnX = this.x - player.x
+        if (differenceOnX > -80 && differenceOnX < 81 && this.y === player.y) {
+           return true;
         }
-   }
+        else {
+            return false;
+        }
+    }
 
 // Draw the enemy on the screen, required method for game
     render() {
@@ -60,7 +56,9 @@ class Enemy {
 
 // In this function we do everything that has to be done when the player is overran by a bug
     eatPlayer() {
-        player= new Player();
+        player.loseLife();
+        loopLives();
+        player.resetPosition();
     }
 }
 
@@ -70,18 +68,30 @@ class Enemy {
 class Player {
     constructor(){
         this.sprite =  'images/char-boy.png';
-
         //start position
         this.x = 200;
         this.y = 400;
-
-        activeTile(5,2);
+        this.numberOfLives = 5;
     }
 
     update(changeOnX = 0,changeOnY = 0) {
         this.x += changeOnX;
         this.y += changeOnY;
         this.render();
+    }
+
+    loseLife(){
+        this.numberOfLives += -1;
+        if (this.numberOfLives < 1){
+            endGame.declareSprite('lost');
+            pauseGame = true;
+            resetGame();
+        }
+    }
+
+    resetPosition(){
+        this.x = 200;
+        this.y = 400;
     }
 
 
@@ -109,7 +119,10 @@ class Player {
 
         if (touchedKey ==='up') {
             if (this.y === 60) {
-                player = new Player;
+                //player = new Player;
+                endGame.declareSprite('won');
+                pauseGame = true;
+                resetGame();
             }
             this.update(0,-85);
         }
@@ -148,3 +161,65 @@ document.addEventListener('keyup', function(e) {
 
     player.handleInput(allowedKeys[e.keyCode]);
 });
+
+class Life {
+    constructor(x){
+        //reference to the image source for the lives
+        this.sprite = 'images/Heart.png';
+        this.x = x;
+        this.y = -25;
+    }
+
+    render(){
+            ctx.drawImage(Resources.get(this.sprite), this.x, this.y)
+    }
+}
+
+
+let allLives = new Set();
+function loopLives() {
+    allLives = new Set();
+    //this is the parameter that will be given to the life Object
+    let x = 400;
+
+    for (let i = 0; i < player.numberOfLives; i++) {
+        const life = new Life(x);
+        //this is the place of the life on the x line, since every life is on a different place it changes for every life.
+        allLives.add(life);
+        x += -100;
+        }
+}
+
+
+class EndGame {
+    constructor(){
+        this.x = 135;
+        this.y = 200;
+    }
+
+    render(){
+        ctx.drawImage(Resources.get(this.sprite), this.x, this.y)
+    }
+    declareSprite(status){
+        if (status==='won'){
+            this.sprite = 'images/winner.png';
+        }
+
+        if (status==='lost'){
+            this.sprite = 'images/lost.png';
+        }
+
+    }
+}
+let endGame = new EndGame('won');
+
+
+//reset game by refreshing the browser, when this function is called we wait 3 seconds to reset the game
+function resetGame() {
+    setTimeout(function () {
+        location.reload();
+    }, 2000);
+}
+
+
+

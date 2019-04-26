@@ -13,6 +13,9 @@
  * writing app.js a little simpler to work with.
  */
 
+//I have added this variable to make it possible to pause the game when the game is won or lost
+let pauseGame = false;
+
 var Engine = (function(global) {
     /* Predefine the variables we'll be using within this scope,
      * create the canvas element, grab the 2D context for that canvas
@@ -106,6 +109,9 @@ var Engine = (function(global) {
         /* This array holds the relative URL to the image used
          * for that particular row of the game level.
          */
+
+        //pause the game when game is won or lost before rebooting
+
         var rowImages = [
                 'images/water-block.png',   // Top row is water
                 'images/stone-block.png',   // Row 1 of 3 of stone
@@ -149,11 +155,24 @@ var Engine = (function(global) {
         /* Loop through all of the objects within the allEnemies array and call
          * the render function you have defined.
          */
+
+        if (pauseGame) {
+            endGame.render();
+            return
+        }
+
         allEnemies.forEach(function(enemy) {
             enemy.render();
         });
 
         player.render();
+
+        //create a life for every life the player has left
+        loopLives();
+        //for every life draw a heart on the screen
+        allLives.forEach(function(life) {
+            life.render();
+        });
     }
 
     /* This function does nothing but it could have been a good place to
@@ -173,7 +192,10 @@ var Engine = (function(global) {
         'images/water-block.png',
         'images/grass-block.png',
         'images/enemy-bug.png',
-        'images/char-boy.png'
+        'images/char-boy.png',
+        'images/Heart.png',
+        'images/winner.png',
+        'images/lost.png'
     ]);
     Resources.onReady(init);
 
